@@ -300,6 +300,52 @@ restart_networkmanager() {
     fi
 }
 
+# 函数：安装脚本到系统
+install_script() {
+    echo ""
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${BLUE}    安装脚本到系统${NC}"
+    echo -e "${BLUE}========================================${NC}"
+    echo ""
+
+    local target_path="/usr/local/bin/ipv6-manager"
+    local source_path="${BASH_SOURCE[0]}"
+
+    # 检查是否已经安装
+    if [ -f "$target_path" ]; then
+        echo -e "${YELLOW}脚本已经安装在 $target_path${NC}"
+        echo ""
+        read -p "是否覆盖安装? [y/N]: " confirm
+        if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+            echo "操作已取消"
+            return 0
+        fi
+    fi
+
+    echo "正在安装脚本..."
+    echo "  源文件: $source_path"
+    echo "  目标位置: $target_path"
+    echo ""
+
+    # 复制脚本
+    cp "$source_path" "$target_path"
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}✗ 复制失败，请使用 sudo 运行脚本${NC}"
+        return 1
+    fi
+
+    # 设置可执行权限
+    chmod +x "$target_path"
+
+    echo -e "${GREEN}✓ 脚本安装成功！${NC}"
+    echo ""
+    echo "现在可以在任何位置运行："
+    echo -e "  ${GREEN}sudo ipv6-manager${NC}"
+    echo ""
+    echo "或者在当前目录运行："
+    echo -e "  ${GREEN}sudo ./ipv6-manager.sh${NC}"
+}
+
 # 主程序
 main() {
     clear
@@ -315,9 +361,10 @@ main() {
     echo -e "  ${RED}2${NC} - 禁用 IPv6"
     echo -e "  ${YELLOW}3${NC} - 重新检查状态"
     echo -e "  ${BLUE}4${NC} - 重启 NetworkManager (测试用)"
+    echo -e "  ${BLUE}5${NC} - 安装脚本到 /usr/local/bin"
     echo -e "  ${BLUE}0${NC} - 退出"
     echo ""
-    echo -n "请输入选项 [0-4]: "
+    echo -n "请输入选项 [0-5]: "
 
     read -r choice
 
@@ -343,6 +390,9 @@ main() {
             ;;
         4)
             restart_networkmanager
+            ;;
+        5)
+            install_script
             ;;
         0)
             echo ""
